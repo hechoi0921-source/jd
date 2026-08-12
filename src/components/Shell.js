@@ -1,3 +1,49 @@
-'use client'
-import Link from 'next/link';import {usePathname,useRouter} from 'next/navigation'
-export default function Shell({children,admin=false}){const path=usePathname(),r=useRouter();const links=admin?[['/admin','Dashboard'],['/admin/feedbacks','Feedback 조회'],['/admin/compare','의견 비교'],['/admin/users','사용자 관리']]:[['/review','SME 검토'],['/mypage','My Page']];return <div className="app"><header><Link href={admin?'/admin':'/review'} className="logo"><b>JD</b><span>직무정보 SME 검토</span></Link><nav>{links.map(([u,n])=><Link className={path===u?'active':''} href={u} key={u}>{n}</Link>)}</nav><button className="ghost" onClick={()=>{localStorage.removeItem('jd_user');r.push('/')}}>로그아웃</button></header><main className="content">{children}</main></div>}
+"use client";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+export default function Shell({ children, admin = false }) {
+  const path = usePathname(),
+    r = useRouter();
+  const links = admin
+    ? [
+        ["/admin", "Dashboard"],
+        ["/admin/feedbacks", "Feedback 조회"],
+        ["/admin/compare", "의견 비교"],
+        ["/admin/users", "사용자 관리"],
+        ["/admin/data", "데이터 관리"],
+        ["/admin/settings", "검토 설정"],
+      ]
+    : [
+        ["/review", "SME 검토"],
+        ["/mypage", "My Page"],
+        ["/guide", "검토 가이드"],
+        ["/account", "계정"],
+      ];
+  return (
+    <div className="app">
+      <header>
+        <Link href={admin ? "/admin" : "/review"} className="logo">
+          <b>JD</b>
+          <span>직무정보 SME 검토</span>
+        </Link>
+        <nav>
+          {links.map(([u, n]) => (
+            <Link className={path === u ? "active" : ""} href={u} key={u}>
+              {n}
+            </Link>
+          ))}
+        </nav>
+        <button
+          className="ghost"
+          onClick={() => {
+            localStorage.removeItem("jd_user");
+            r.push("/");
+          }}
+        >
+          로그아웃
+        </button>
+      </header>
+      <main className="content">{children}</main>
+    </div>
+  );
+}

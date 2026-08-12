@@ -7,13 +7,20 @@ export default function Review() {
   const [data, setData] = useState([]),
     [jobId, setJobId] = useState(""),
     [dirty, setDirty] = useState(false),
-    [open, setOpen] = useState({});
+    [open, setOpen] = useState({}),
+    [group, setGroup] = useState(""),
+    [series, setSeries] = useState(""),
+    [savedAt, setSavedAt] = useState("");
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/data/jobs.json`)
       .then((r) => r.json())
       .then((x) => {
+        const local = JSON.parse(localStorage.getItem("jd_dataset") || "null");
+        x = local?.jobs || x;
         setData(x);
         setJobId(String(x[0]?.id || ""));
+        setGroup(x[0]?.job_group || "");
+        setSeries(x[0]?.job_series || "");
       });
   }, []);
   useEffect(() => {
@@ -30,6 +37,11 @@ export default function Review() {
     () => data.find((x) => String(x.id) === jobId),
     [data, jobId],
   );
+  const groups = [...new Set(data.map((x) => x.job_group))];
+  const seriesList = [...new Set(data.filter((x) => x.job_group === group).map((x) => x.job_series))];
+  const jobs = data.filter((x) => x.job_group === group && x.job_series === series);
+  const statuses = typeof window === "undefined" ? {} : JSON.parse(localStorage.getItem("jd_statuses") || "{}");
+  const settings = typeof window === "undefined" ? {} : JSON.parse(localStorage.getItem("jd_settings") || "{}");
   const user =
     typeof window === "undefined"
       ? {}
@@ -54,10 +66,12 @@ export default function Review() {
       original={text}
       userId={user.email || "demo"}
       onDirty={setDirty}
+      onSaved={() => setSavedAt(new Date().toLocaleTimeString("ko-KR", {hour:"2-digit",minute:"2-digit"}))}
     />
   );
   return (
     <Shell>
+      {settings.end && <div className="deadline">검토 마감일 {settings.end} · D-{Math.max(0,Math.ceil((new Date(settings.end)-new Date())/86400000))}</div>}
       <div className="pageHead">
         <div>
           <p className="eyebrow">SME REVIEW</p>
@@ -77,16 +91,16 @@ export default function Review() {
         </button>
       </div>
       <div className="filters">
-        <select value={job.job_group} disabled>
-          <option>{job.job_group}</option>
+        <select value={group} onChange={(e)=>{const g=e.target.value,s=data.find(x=>x.job_group===g)?.job_series,j=data.find(x=>x.job_group===g&&x.job_series===s);setGroup(g);setSeries(s);change(String(j?.id||""))}}>
+          {groups.map(x=><option key={x}>{x}</option>)}
         </select>
-        <select value={job.job_series} disabled>
-          <option>{job.job_series}</option>
+        <select value={series} onChange={(e)=>{const s=e.target.value,j=data.find(x=>x.job_group===group&&x.job_series===s);setSeries(s);change(String(j?.id||""))}}>
+          {seriesList.map(x=><option key={x}>{x}</option>)}
         </select>
         <select value={jobId} onChange={(e) => change(e.target.value)}>
-          {data.map((x) => (
+          {jobs.map((x) => (
             <option value={x.id} key={x.id}>
-              {x.name}
+              {statuses[x.id]?.status==='검토완료'?'✓ ':statuses[x.id]?'● ':'○ '}{x.name}
             </option>
           ))}
         </select>
@@ -159,6 +173,7 @@ export default function Review() {
         <h2>종합 의견</h2>
         <F type="overall" keyName="overall" text="" />
       </section>
+      <div className="saveBar"><span>{savedAt?`마지막 저장 ${savedAt}`:'변경사항은 항목별 반영되며 30초 후 자동 저장됩니다.'}</span><button onClick={()=>{setDirty(false);setSavedAt(new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}));alert('임시저장되었습니다.')}}>임시저장</button></div>
     </Shell>
   );
 }

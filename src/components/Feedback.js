@@ -1,4 +1,78 @@
-'use client'
-import {useEffect,useState} from 'react';import {getFeedbacks,saveFeedback} from '@/lib/store'
-const opts=['적정','수정 필요','삭제 검토','추가 필요'];
-export default function Feedback({jobId,type,targetKey,original,userId,onDirty}){const [result,setResult]=useState(''),[comment,setComment]=useState('');useEffect(()=>{const x=getFeedbacks().find(x=>x.user_id===userId&&x.job_id===jobId&&x.feedback_type===type&&x.target_key===targetKey);setResult(x?.review_result||'');setComment(x?.comment||'')},[jobId,type,targetKey,userId]);function save(r=result,c=comment){saveFeedback({user_id:userId,job_id:jobId,feedback_type:type,target_key:targetKey,original_text:original,review_result:r,comment:c});onDirty?.(false)}return <div className="feedback"><div className="pills">{opts.map(x=><button key={x} className={result===x?'selected':''} onClick={()=>{const v=result===x?'':x;setResult(v);onDirty?.(true);save(v,comment)}}>{x}</button>)}</div><div className="comment"><input value={comment} onChange={e=>{setComment(e.target.value);onDirty?.(true)}} placeholder="검토 의견을 입력하세요"/><button onClick={()=>save()}>저장</button></div></div>}
+"use client";
+import { useEffect, useState } from "react";
+import { getFeedbacks, saveFeedback } from "@/lib/store";
+const opts = ["적정", "수정 필요", "삭제 검토", "추가 필요"];
+export default function Feedback({
+  jobId,
+  type,
+  targetKey,
+  original,
+  userId,
+  onDirty,
+  onSaved,
+}) {
+  const [result, setResult] = useState(""),
+    [comment, setComment] = useState("");
+  useEffect(() => {
+    const x = getFeedbacks().find(
+      (x) =>
+        x.user_id === userId &&
+        x.job_id === jobId &&
+        x.feedback_type === type &&
+        x.target_key === targetKey,
+    );
+    setResult(x?.review_result || "");
+    setComment(x?.comment || "");
+  }, [jobId, type, targetKey, userId]);
+  function save(r = result, c = comment) {
+    saveFeedback({
+      user_id: userId,
+      job_id: jobId,
+      feedback_type: type,
+      target_key: targetKey,
+      original_text: original,
+      review_result: r,
+      comment: c,
+    });
+    onDirty?.(false);
+    onSaved?.();
+  }
+  useEffect(() => {
+    if (!comment) return;
+    const timer = setTimeout(() => save(result, comment), 30000);
+    return () => clearTimeout(timer);
+  }, [comment]);
+  return (
+    <div className="feedback">
+      <div className="pills">
+        {opts.map((x) => (
+          <button
+            key={x}
+            className={result === x ? "selected" : ""}
+            onClick={() => {
+              const v = result === x ? "" : x;
+              setResult(v);
+              onDirty?.(true);
+              save(v, comment);
+            }}
+          >
+            {x}
+          </button>
+        ))}
+      </div>
+      <div className="comment">
+        <input
+          value={comment}
+          maxLength={1000}
+          onChange={(e) => {
+            setComment(e.target.value);
+            onDirty?.(true);
+          }}
+          placeholder="검토 의견을 입력하세요"
+        />
+        <span className="counter">{comment.length}/1000</span>
+        <button onClick={() => save()}>반영</button>
+      </div>
+    </div>
+  );
+}
