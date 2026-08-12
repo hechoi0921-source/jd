@@ -1,1 +1,33 @@
-'use client';import Shell from '@/components/Shell';import {getFeedbacks} from '@/lib/store';export default function Page(){const rows=getFeedbacks(),g=Object.groupBy?Object.groupBy(rows,x=>`${x.job_id}:${x.feedback_type}:${x.target_key}`):{};return <Shell admin><div className="pageHead"><div><p className="eyebrow">ADMIN</p><h1>SME별 의견 비교</h1></div></div>{Object.entries(g).map(([k,v])=><section className="card" key={k}><h3>{k}</h3>{v.map((x,i)=><p key={i}><b>{x.user_id}</b> · {x.review_result} — {x.comment||'의견 없음'}</p>)}</section>)}</Shell>}
+"use client";
+import Shell from "@/components/Shell";
+import { getFeedbacks } from "@/lib/store";
+export default function Page() {
+  const rows = getFeedbacks(),
+    g = Object.groupBy
+      ? Object.groupBy(
+          rows,
+          (x) => `${x.job_id}:${x.feedback_type}:${x.target_key}`,
+        )
+      : {};
+  return (
+    <Shell admin>
+      <div className="pageHead">
+        <div>
+          <p className="eyebrow">ADMIN</p>
+          <h1>SME별 의견 비교</h1>
+        </div>
+      </div>
+      {Object.entries(g).map(([k, v]) => (
+        <section className="card" key={k}>
+          <h3>{k}</h3>
+          {v.map((x, i) => (
+            <p key={i}>
+              <b>{x.user_id}</b> · {x.review_result} —{" "}
+              {x.comment || "의견 없음"}
+            </p>
+          ))}
+        </section>
+      ))}
+    </Shell>
+  );
+}
