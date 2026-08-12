@@ -1,0 +1,4 @@
+export const getFeedbacks=()=>typeof window==='undefined'?[]:JSON.parse(localStorage.getItem('jd_feedbacks')||'[]');
+export function saveFeedback(row){const rows=getFeedbacks(),i=rows.findIndex(x=>x.user_id===row.user_id&&x.job_id===row.job_id&&x.feedback_type===row.feedback_type&&x.target_key===row.target_key);const next={...row,updated_at:new Date().toISOString()};if(!row.review_result&&!row.comment){if(i>=0)rows.splice(i,1)}else if(i>=0)rows[i]=next;else rows.push(next);localStorage.setItem('jd_feedbacks',JSON.stringify(rows));return rows}
+export const getStatuses=()=>typeof window==='undefined'?{}:JSON.parse(localStorage.getItem('jd_statuses')||'{}');
+export function setStatus(jobId,status){const x=getStatuses();x[jobId]={status,updated_at:new Date().toISOString()};localStorage.setItem('jd_statuses',JSON.stringify(x))}

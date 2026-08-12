@@ -1,0 +1,1 @@
+import Shell from '@/components/Shell';export default function Page(){return <Shell admin><div className="pageHead"><div><p className="eyebrow">ADMIN</p><h1>사용자 관리</h1></div></div><section className="card"><p>Supabase 연결 후 Auth 사용자 등록, 활성 상태와 직무 배정을 관리합니다.</p><p className="muted">초기 관리자: admin@jd.local · 초기 비밀번호는 환경변수로 설정</p></section></Shell>}
